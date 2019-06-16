@@ -580,7 +580,7 @@ func (q *MockFilter) Read(out interface{}) Op {
 			result = result[:opt.Limit]
 		}
 
-		return q.assignResult(result, out)
+		return nil
 	})
 }
 
@@ -630,10 +630,6 @@ func (q *MockFilter) readAllRows() []map[string]interface{} {
 	return result
 }
 
-func (q *MockFilter) assignResult(records interface{}, out interface{}) error {
-	return decodeResult(records, out)
-}
-
 func (q *MockFilter) ReadOne(out interface{}) Op {
 	return newOp(func(m mockOp) error {
 		slicePtrVal := reflect.New(reflect.SliceOf(reflect.ValueOf(out).Elem().Type()))
@@ -647,7 +643,7 @@ func (q *MockFilter) ReadOne(out interface{}) Op {
 		if sliceVal.Len() < 1 {
 			return RowNotFoundError{}
 		}
-		q.assignResult(sliceVal.Index(0).Interface(), out)
+		reflect.ValueOf(out).Set(sliceVal.Index(0))
 		return nil
 	})
 }

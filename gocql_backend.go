@@ -8,23 +8,19 @@ type goCQLBackend struct {
 	session *gocql.Session
 }
 
-func (cb goCQLBackend) Query(stmt Statement) ([]map[string]interface{}, error) {
-	return cb.QueryWithOptions(Options{}, stmt)
+func (cb goCQLBackend) Query(stmt Statement, scanner Scanner) error {
+	return cb.QueryWithOptions(Options{}, stmt, scanner)
 }
 
-func (cb goCQLBackend) QueryWithOptions(opts Options, stmt Statement) ([]map[string]interface{}, error) {
+func (cb goCQLBackend) QueryWithOptions(opts Options, stmt Statement, scanner Scanner) error {
 	qu := cb.session.Query(stmt.Query(), stmt.Values()...)
 	if opts.Consistency != nil {
 		qu = qu.Consistency(*opts.Consistency)
 	}
+
 	iter := qu.Iter()
-	ret := []map[string]interface{}{}
-	m := &map[string]interface{}{}
-	for iter.MapScan(*m) {
-		ret = append(ret, *m)
-		m = &map[string]interface{}{}
-	}
-	return ret, iter.Close()
+	scanner.ScanAll(iter)
+	return iter.Close()
 }
 
 func (cb goCQLBackend) Execute(stmt Statement) error {

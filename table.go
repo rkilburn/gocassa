@@ -3,7 +3,6 @@ package gocassa
 import (
 	"bytes"
 	"fmt"
-	"reflect"
 	"strconv"
 	"strings"
 
@@ -94,20 +93,6 @@ func (t t) generateFieldList(sel []string) []string {
 		}
 	}
 	return xs
-}
-
-// generateFieldTypes takes in the field names and returns
-// a slice of the associated types
-func (t t) generateFieldTypes(fieldNames []string) []reflect.Type {
-	ft := make([]reflect.Type, len(fieldNames))
-	for i, name := range fieldNames {
-		src, ok := t.info.loweredFieldSource[name]
-		if !ok {
-			panic(fmt.Sprintf("could not find field %s in %T", name, t.info.marshalSource))
-		}
-		ft[i] = reflect.TypeOf(src)
-	}
-	return ft
 }
 
 func relations(keys Keys, m map[string]interface{}) []Relation {
