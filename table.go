@@ -17,14 +17,13 @@ type t struct {
 
 // Contains mostly analyzed information about the entity
 type tableInfo struct {
-	keyspace, name     string
-	marshalSource      interface{}
-	fieldSource        map[string]interface{}
-	loweredFieldSource map[string]interface{} // Same as above but with lower case keys
-	keys               Keys
-	fieldNames         map[string]struct{} // This is here only to check containment
-	fields             []string
-	fieldValues        []interface{}
+	keyspace, name string
+	marshalSource  interface{}
+	fieldSource    map[string]interface{}
+	keys           Keys
+	fieldNames     map[string]struct{} // This is here only to check containment
+	fields         []string
+	fieldValues    []interface{}
 }
 
 func newTableInfo(keyspace, name string, keys Keys, entity interface{}, fieldSource map[string]interface{}) *tableInfo {
@@ -37,11 +36,9 @@ func newTableInfo(keyspace, name string, keys Keys, entity interface{}, fieldSou
 	}
 	fields := make([]string, 0, len(fieldSource))
 	values := make([]interface{}, 0, len(fieldSource))
-	loweredFieldSource := map[string]interface{}{}
 	for _, k := range sortedKeys(fieldSource) {
 		fields = append(fields, k)
 		values = append(values, fieldSource[k])
-		loweredFieldSource[strings.ToLower(k)] = fieldSource[k]
 	}
 	cinf.fieldNames = map[string]struct{}{}
 	for _, v := range fields {
@@ -49,7 +46,6 @@ func newTableInfo(keyspace, name string, keys Keys, entity interface{}, fieldSou
 	}
 	cinf.fields = fields
 	cinf.fieldValues = values
-	cinf.loweredFieldSource = loweredFieldSource
 	return cinf
 }
 

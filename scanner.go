@@ -3,7 +3,6 @@ package gocassa
 import (
 	"fmt"
 	"reflect"
-	"runtime"
 	"strings"
 
 	"github.com/gocql/gocql"
@@ -123,8 +122,7 @@ func (s *scanner) iterSingle(iter Scannable) (int, error) {
 	ptrs := generatePtrs()
 	scanOk := iter.Scan(ptrs...) // we only need to scan once
 	if !scanOk {
-		_, f, n, _ := runtime.Caller(5)
-		return 0, RowNotFoundError{file: f, line: n}
+		return 0, RowNotFoundError{}
 	}
 
 	outPtr := reflect.ValueOf(s.result)
