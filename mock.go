@@ -170,10 +170,6 @@ func (ks *mockKeySpace) NewTable(name string, entity interface{}, fieldSource ma
 	}
 	mt.fields = fields
 
-	if name == "users_multimap_Pk1_Pk2" {
-		fmt.Printf("Mnew: %+v %+v %+v\n", name, fieldSource, fields)
-	}
-
 	return mt
 }
 
@@ -593,10 +589,6 @@ func (q *MockFilter) Read(out interface{}) Op {
 		opt := q.table.options.Merge(m.options)
 		if opt.Limit > 0 && opt.Limit < len(result) {
 			result = result[:opt.Limit]
-		}
-
-		if q.table.name == "users_multimap_Pk1_Pk2" {
-			fmt.Printf("%+v, %+v\n", q.table, q.table.fields)
 		}
 
 		fieldNames := opt.Select
