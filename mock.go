@@ -419,12 +419,14 @@ func (t *MockTable) Recreate() error {
 
 func (t *MockTable) WithOptions(o Options) Table {
 	return &MockTable{
-		name:    t.name,
-		rows:    t.rows,
-		entity:  t.entity,
-		keys:    t.keys,
-		options: t.options.Merge(o),
-		mtx:     t.mtx,
+		name:        t.name,
+		rows:        t.rows,
+		entity:      t.entity,
+		keys:        t.keys,
+		fieldSource: t.fieldSource,
+		fields:      t.fields,
+		options:     t.options.Merge(o),
+		mtx:         t.mtx,
 	}
 }
 
