@@ -297,7 +297,7 @@ type QueryExecutor interface {
 	// ExecuteAtomically executes multiple DML queries with a logged batch
 	ExecuteAtomically(stmt []Statement) error
 	// ExecuteAtomically executes multiple DML queries with a logged batch, and takes options
-	ExecuteAtomicallyWithOptions(opts Options, stmt []Statement) error
+	ExecuteAtomicallyWithOptions(opts Options, stmts []Statement) error
 }
 
 type Counter int

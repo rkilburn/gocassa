@@ -77,8 +77,9 @@ func (s *scanner) iterSlice(iter Scannable) (int, error) {
 
 	for iter.Scan(ptrs...) {
 		out := reflect.New(typ)
-		if out.Kind() == reflect.Ptr {
-			out = out.Elem()
+		outVal := out
+		if outVal.Kind() == reflect.Ptr {
+			outVal = outVal.Elem()
 		}
 
 		for index, field := range structFields {
