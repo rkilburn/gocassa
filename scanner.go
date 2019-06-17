@@ -25,8 +25,24 @@ func newScanner(stmt statement, result interface{}) *scanner {
 	}
 }
 
+func getBaseType(in interface{}) reflect.Type {
+	elem := reflect.TypeOf(in)
+	for elem.Kind() == reflect.Ptr {
+		elem = elem.Elem()
+	}
+	return elem
+}
+
+func getBaseSliceType(in interface{}) reflect.Type {
+	elem := reflect.TypeOf(in)
+	for elem.Kind() == reflect.Ptr || elem.Kind() == reflect.Slice {
+		elem = elem.Elem()
+	}
+	return elem
+}
+
 func (s *scanner) ScanAll(iter Scannable) (int, error) {
-	switch reflect.TypeOf(s.result).Elem().Kind() { // TODO: optimise this
+	switch getBaseType(s.result).Kind() { // TODO: optimise this
 	case reflect.Slice:
 		return s.iterSlice(iter)
 	case reflect.Struct:
@@ -40,10 +56,7 @@ func (s *scanner) ScanAll(iter Scannable) (int, error) {
 func (s *scanner) iterSlice(iter Scannable) (int, error) {
 	// Extract the type of the slice. If the underlying type is a
 	// pointer type we want to dereference it
-	typ := reflect.TypeOf(s.result).Elem().Elem()
-	if typ.Kind() == reflect.Ptr {
-		typ = typ.Elem()
-	}
+	sliceType := getBaseSliceType(s.result)
 
 	// To preserve prior bebaviour, if the result slice is not empty
 	// then allocate a new slice and set it as the value
@@ -53,7 +66,7 @@ func (s *scanner) iterSlice(iter Scannable) (int, error) {
 		slice.Set(reflect.Zero(reflect.TypeOf(s.result).Elem()))
 	}
 
-	ptr := reflect.New(typ).Interface() // TODO: could we get rid of this alloc?
+	ptr := reflect.New(sliceType).Interface() // TODO: could we get rid of this alloc?
 	m, ok := r.StructFieldMap(ptr, true)
 	if !ok {
 		return 0, fmt.Errorf("could not decode struct of type %T", ptr)
@@ -76,7 +89,7 @@ func (s *scanner) iterSlice(iter Scannable) (int, error) {
 	ptrs := generatePtrs()
 
 	for iter.Scan(ptrs...) {
-		out := reflect.New(typ)
+		out := reflect.New(sliceType)
 		outVal := out
 		if outVal.Kind() == reflect.Ptr {
 			outVal = outVal.Elem()
