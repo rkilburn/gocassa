@@ -26,7 +26,7 @@ func getTestHosts() []string {
 	}
 }
 
-func initSession() {
+func init() {
 	kname := "test_ihopeudonthaveakeyspacenamedlikedthis"
 	var err error
 
@@ -60,8 +60,6 @@ func initSession() {
 }
 
 func TestEq(t *testing.T) {
-	initSession()
-
 	cs := ns.Table("customer", Customer{}, Keys{PartitionKeys: []string{"Id"}})
 	createIf(cs.(TableChanger), t)
 	err := cs.Set(Customer{
@@ -85,8 +83,6 @@ func TestEq(t *testing.T) {
 }
 
 func TestMultipleRowResults(t *testing.T) {
-	initSession()
-
 	name := "customer_multipletest"
 	cs := ns.Table(name, Customer{}, Keys{
 		PartitionKeys:     []string{"Name"},
@@ -118,8 +114,6 @@ func TestMultipleRowResults(t *testing.T) {
 }
 
 func TestRunAtomically(t *testing.T) {
-	initSession()
-
 	name := "customer_multipletest2"
 	cs := ns.Table(name, Customer{}, Keys{
 		PartitionKeys:     []string{"Name"},
@@ -151,16 +145,10 @@ func TestRunAtomically(t *testing.T) {
 }
 
 func TestIn(t *testing.T) {
-	initSession()
-
 	cs := ns.Table("customer", Customer{}, Keys{
 		PartitionKeys: []string{"Id"},
 	})
-	err := cs.(TableChanger).Recreate()
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = cs.Set(Customer{
+	err := cs.Set(Customer{
 		Id:   "100",
 		Name: "Joe",
 	}).Add(cs.Set(Customer{
@@ -186,8 +174,6 @@ func TestIn(t *testing.T) {
 }
 
 func TestAnd(t *testing.T) {
-	initSession()
-
 	cs := ns.Table("customer1", Customer{}, Keys{PartitionKeys: []string{"Id", "Name"}})
 	createIf(cs.(TableChanger), t)
 	err := cs.Set(Customer{
@@ -208,8 +194,6 @@ func TestAnd(t *testing.T) {
 }
 
 func TestQueryReturnError(t *testing.T) {
-	initSession()
-
 	cs := ns.Table("customer2", Customer{}, Keys{})
 	res := []Customer{}
 	err := cs.Where(Eq("Id", "100"), Eq("Name", "Joe")).Read(&res).Run()
@@ -219,8 +203,6 @@ func TestQueryReturnError(t *testing.T) {
 }
 
 func TestRowNotFoundError(t *testing.T) {
-	initSession()
-
 	cs := ns.MapTable("customer", "Id", Customer{})
 	createIf(cs.(TableChanger), t)
 	c := &Customer{}
@@ -272,8 +254,6 @@ func newCustomer3() Customer3 {
 }
 
 func TestTypesMarshal(t *testing.T) {
-	initSession()
-
 	c := newCustomer3()
 	tbl := ns.Table("customer3", Customer3{}, Keys{PartitionKeys: []string{"Id"}})
 	createIf(tbl.(TableChanger), t)
@@ -294,8 +274,6 @@ func TestTypesMarshal(t *testing.T) {
 }
 
 func TestUpdateList(t *testing.T) {
-	initSession()
-
 	tbl := ns.Table("customer34", Customer3{}, Keys{PartitionKeys: []string{"Id"}})
 	createIf(tbl.(TableChanger), t)
 	c := newCustomer3()
@@ -370,8 +348,6 @@ func TestUpdateList(t *testing.T) {
 }
 
 func TestCQLInjection(t *testing.T) {
-	initSession()
-
 	tbl := ns.Table("customer45", Customer3{}, Keys{PartitionKeys: []string{"Id"}})
 	createIf(tbl.(TableChanger), t)
 	c := Customer3{
@@ -397,8 +373,6 @@ type CustomerWithMap struct {
 }
 
 func TestMaps(t *testing.T) {
-	initSession()
-
 	tbl := ns.MapTable("customer34213", "Id", CustomerWithMap{})
 	createIf(tbl.(TableChanger), t)
 	c := CustomerWithMap{
@@ -447,8 +421,6 @@ type CustomerWithCounter struct {
 }
 
 func TestCounters(t *testing.T) {
-	initSession()
-
 	tbl := ns.MapTable("customer4985", "Id", CustomerWithCounter{})
 	createIf(tbl.(TableChanger), t)
 	c := CustomerWithCounter{
@@ -483,8 +455,6 @@ func TestCounters(t *testing.T) {
 }
 
 func TestNoop(t *testing.T) {
-	initSession()
-
 	err := Noop().Run()
 	if err != nil {
 		t.Fatal(err)
@@ -511,8 +481,6 @@ func TestNoop(t *testing.T) {
 }
 
 func TestSelect(t *testing.T) {
-	initSession()
-
 	tbl := ns.MapTable("customerSelectFields", "Id", Customer3{})
 	createIf(tbl.(TableChanger), t)
 	if err := tbl.Set(newCustomer3()).Run(); err != nil {
