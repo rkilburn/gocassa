@@ -25,7 +25,7 @@ func newScanner(stmt statement, result interface{}) *scanner {
 	}
 }
 
-func getBaseType(in interface{}) reflect.Type {
+func getType(in interface{}) reflect.Type {
 	elem := reflect.TypeOf(in)
 	for elem.Kind() == reflect.Ptr {
 		elem = elem.Elem()
@@ -33,7 +33,7 @@ func getBaseType(in interface{}) reflect.Type {
 	return elem
 }
 
-func getBaseSliceType(in interface{}) reflect.Type {
+func getSliceBaseType(in interface{}) reflect.Type {
 	elem := reflect.TypeOf(in)
 	for elem.Kind() == reflect.Ptr || elem.Kind() == reflect.Slice {
 		elem = elem.Elem()
@@ -42,7 +42,7 @@ func getBaseSliceType(in interface{}) reflect.Type {
 }
 
 func (s *scanner) ScanAll(iter Scannable) (int, error) {
-	switch getBaseType(s.result).Kind() { // TODO: optimise this
+	switch getType(s.result).Kind() { // TODO: optimise this
 	case reflect.Slice:
 		return s.iterSlice(iter)
 	case reflect.Struct:
@@ -56,7 +56,7 @@ func (s *scanner) ScanAll(iter Scannable) (int, error) {
 func (s *scanner) iterSlice(iter Scannable) (int, error) {
 	// Extract the type of the slice. If the underlying type is a
 	// pointer type we want to dereference it
-	sliceType := getBaseSliceType(s.result)
+	sliceType := getSliceBaseType(s.result)
 
 	// To preserve prior bebaviour, if the result slice is not empty
 	// then allocate a new slice and set it as the value
