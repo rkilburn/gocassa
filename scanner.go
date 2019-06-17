@@ -33,9 +33,9 @@ func getType(in interface{}) reflect.Type {
 	return elem
 }
 
-func getSliceBaseType(in interface{}) reflect.Type {
-	elem := reflect.TypeOf(in)
-	for elem.Kind() == reflect.Ptr || elem.Kind() == reflect.Slice {
+func getSliceValueType(in interface{}) reflect.Type {
+	elem := getType(in).Elem()
+	if elem.Kind() == reflect.Ptr {
 		elem = elem.Elem()
 	}
 	return elem
@@ -54,19 +54,20 @@ func (s *scanner) ScanAll(iter Scannable) (int, error) {
 }
 
 func (s *scanner) iterSlice(iter Scannable) (int, error) {
-	// Extract the type of the slice. If the underlying type is a
-	// pointer type we want to dereference it
-	sliceType := getSliceBaseType(s.result)
+	// Extract the type of the slice
+	// TODO(suhail): Name these better!
+	sliceType := getType(s.result)
+	sliceElemType := getType(sliceType.Elem())
+	sliceElemValType := getSliceValueType(s.result)
 
 	// To preserve prior bebaviour, if the result slice is not empty
 	// then allocate a new slice and set it as the value
-	slicePtr := reflect.ValueOf(s.result)
-	slice := slicePtr.Elem()
+	slice := reflect.ValueOf(s.result).Elem()
 	if slice.Len() != 0 {
-		slice.Set(reflect.Zero(reflect.TypeOf(s.result).Elem()))
+		slice.Set(reflect.Zero(sliceType))
 	}
 
-	ptr := reflect.New(sliceType).Interface() // TODO: could we get rid of this alloc?
+	ptr := reflect.New(sliceElemValType).Interface()
 	m, ok := r.StructFieldMap(ptr, true)
 	if !ok {
 		return 0, fmt.Errorf("could not decode struct of type %T", ptr)
@@ -89,11 +90,8 @@ func (s *scanner) iterSlice(iter Scannable) (int, error) {
 	ptrs := generatePtrs()
 
 	for iter.Scan(ptrs...) {
-		out := reflect.New(sliceType)
-		outVal := out
-		if outVal.Kind() == reflect.Ptr {
-			outVal = outVal.Elem()
-		}
+		outPtr := reflect.New(sliceElemValType)
+		outVal := outPtr.Elem()
 
 		for index, field := range structFields {
 			if field == nil {
@@ -106,7 +104,12 @@ func (s *scanner) iterSlice(iter Scannable) (int, error) {
 			}
 		}
 
-		slice.Set(reflect.Append(slice, out))
+		if sliceElemType.Kind() == reflect.Ptr {
+			slice.Set(reflect.Append(slice, outPtr))
+		} else {
+			slice.Set(reflect.Append(slice, outVal))
+		}
+
 		ptrs = generatePtrs()
 		s.rowCount++
 	}
