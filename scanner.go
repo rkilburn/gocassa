@@ -98,7 +98,7 @@ func (s *scanner) iterSlice(iter Scannable) (int, error) {
 				continue
 			}
 
-			outField := outVal.Field(field.Index()[0])
+			outField := outVal.FieldByIndex(field.Index())
 			if outField.CanSet() {
 				outField.Set(reflect.ValueOf(ptrs[index]).Elem())
 			}
@@ -158,7 +158,7 @@ func (s *scanner) iterSingle(iter Scannable) (int, error) {
 			continue
 		}
 
-		outField := outVal.Field(field.Index()[0])
+		outField := outVal.FieldByIndex(field.Index())
 		if outField.CanSet() {
 			outField.Set(reflect.ValueOf(ptrs[index]).Elem())
 		}
