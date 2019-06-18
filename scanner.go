@@ -130,7 +130,10 @@ func (s *scanner) iterSingle(iter Scannable) (int, error) {
 	outPtr := reflect.ValueOf(s.result)
 	outVal := outPtr.Elem()
 	if outVal.Kind() == reflect.Ptr && outVal.IsNil() {
-		outVal = allocateResult(s.result)
+		allocateResult(s.result)
+	}
+	for outVal.Kind() == reflect.Ptr {
+		outVal = outVal.Elem() // we will eventually get to the underlying type
 	}
 
 	structFields := s.structFields(m)
@@ -181,7 +184,7 @@ func (s *scanner) structFields(m map[string]r.Field) []*r.Field {
 	return structFields
 }
 
-func allocateResult(in interface{}) reflect.Value {
+func allocateResult(in interface{}) {
 	resultType := reflect.TypeOf(in)
 	resultValType := resultType.Elem()
 
@@ -203,7 +206,6 @@ func allocateResult(in interface{}) reflect.Value {
 	}
 
 	reflect.ValueOf(in).Elem().Set(resultPtr)
-	return structPtr.Elem()
 }
 
 // This struct is for fields we want to ignore, we specify a custom unmarshal
