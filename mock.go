@@ -700,10 +700,6 @@ func (iter *mockIterator) Scan(dest ...interface{}) bool {
 			continue
 		}
 
-		if reflect.ValueOf(value).Type() != rv.Elem().Type() {
-			panic(fmt.Sprintf("could not unmarshal %T into %v", value, rv.Elem().Type()))
-		}
-
 		elem := reflect.ValueOf(dest[i]).Elem()
 		elem.Set(reflect.ValueOf(value))
 	}
