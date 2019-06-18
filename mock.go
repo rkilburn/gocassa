@@ -700,8 +700,15 @@ func (iter *mockIterator) Scan(dest ...interface{}) bool {
 			continue
 		}
 
-		elem := reflect.ValueOf(dest[i]).Elem()
-		elem.Set(reflect.ValueOf(value))
+		sv := reflect.ValueOf(value)
+		if sv.Type() != rv.Elem().Type() {
+			if !sv.Type().ConvertibleTo(rv.Elem().Type()) {
+				panic(fmt.Sprintf("could not unmarshal %T into %v", value, rv.Elem().Type()))
+			}
+			sv = sv.Convert(rv.Elem().Type())
+		}
+
+		rv.Elem().Set(sv)
 	}
 
 	iter.rowsRead++
