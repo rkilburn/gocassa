@@ -21,8 +21,12 @@ func (f filter) Delete() Op {
 	return newWriteOp(f.t.keySpace.qe, f, deleteOpType, nil)
 }
 
-func (f filter) DeleteKey(m map[string]interface{}) Op {
-	return newWriteOp(f.t.keySpace.qe, f, deleteKeyOpType, m)
+func (f filter) DeleteKeysFromMap(mapName string, columnsToDelete []interface{}) Op {
+	m := map[string]interface{}{
+		"mapName": mapName,
+		"keys": columnsToDelete,
+	}
+	return newWriteOp(f.t.keySpace.qe, f, deleteKeysOpType, m)
 }
 
 //

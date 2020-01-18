@@ -79,7 +79,7 @@ type MapTable interface {
 	// will be deleted. To only overwrite some of the fields, Update()
 	Set(rowStruct interface{}) Op
 	Update(partitionKey interface{}, valuesToUpdate map[string]interface{}) Op
-	DeleteKey(partitionKey interface{}, valuesToUpdate map[string]interface{}) Op
+	DeleteKeysFromMap(partitionKey interface{}, mapName string, keysToRemove []interface{}) Op
 	Delete(partitionKey interface{}) Op
 	Read(partitionKey, pointer interface{}) Op
 	MultiRead(partitionKeys []interface{}, pointerToASlice interface{}) Op
@@ -113,7 +113,7 @@ type MultimapMkTable interface {
 	Set(rowStruct interface{}) Op
 	Update(v, id map[string]interface{}, valuesToUpdate map[string]interface{}) Op
 	Delete(v, id map[string]interface{}) Op
-	DeleteKey(v, id map[string]interface{}, valuesToUpdate map[string]interface{}) Op
+	DeleteKeysFromMap(v, id map[string]interface{}, mapName string, keysToRemove []interface{}) Op
 	DeleteAll(v map[string]interface{}) Op
 	List(v, startId map[string]interface{}, limit int, pointerToASlice interface{}) Op
 	Read(v, id map[string]interface{}, pointer interface{}) Op
@@ -135,7 +135,7 @@ type TimeSeriesTable interface {
 	Set(rowStruct interface{}) Op
 	Update(timeStamp time.Time, id interface{}, valuesToUpdate map[string]interface{}) Op
 	Delete(timeStamp time.Time, id interface{}) Op
-	DeleteKey(timeStamp time.Time, id interface{}, valuesToUpdate map[string]interface{}) Op
+	DeleteKeysFromMap(timeStamp time.Time, id interface{}, mapName string, keysToRemove []interface{}) Op
 	Read(timeStamp time.Time, id, pointer interface{}) Op
 	List(start, end time.Time, pointerToASlice interface{}) Op
 	Buckets(start time.Time) Buckets
@@ -186,7 +186,7 @@ type FlakeSeriesTable interface {
 	// will be deleted. To only overwrite some of the fields, Update()
 	Set(rowStruct interface{}) Op
 	Update(id string, valuesToUpdate map[string]interface{}) Op
-	DeleteKey(id string, valuesToUpdate map[string]interface{}) Op
+	DeleteKeysFromMap(id string, mapName string, keysToRemove []interface{}) Op
 	Delete(id string) Op
 	Read(id string, pointer interface{}) Op
 	List(start, end time.Time, pointerToASlice interface{}) Op
@@ -228,7 +228,7 @@ type Filter interface {
 	// Delete all rows matching the filter.
 	Delete() Op
 	// Delete key(s) from a map
-	DeleteKey(valuesToUpdate map[string]interface{}) Op
+	DeleteKeysFromMap(mapName string, keysToRemove []interface{}) Op
 	// Reads all results. Make sure you pass in a pointer to a slice.
 	Read(pointerToASlice interface{}) Op
 	// ReadOne reads a single result. Make sure you pass in a pointer.

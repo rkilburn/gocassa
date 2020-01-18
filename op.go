@@ -16,7 +16,7 @@ const (
 	deleteOpType
 	updateOpType
 	insertOpType
-	deleteKeyOpType
+	deleteKeysOpType
 )
 
 type singleOp struct {
@@ -77,7 +77,7 @@ func (w *singleOp) write() error {
 
 func (o *singleOp) Run() error {
 	switch o.opType {
-	case updateOpType, insertOpType, deleteOpType, deleteKeyOpType:
+	case updateOpType, insertOpType, deleteOpType, deleteKeysOpType:
 		return o.write()
 	case readOpType:
 		return o.read()
@@ -129,11 +129,22 @@ func (o *singleOp) generateWrite(opt Options) Statement {
 	case deleteOpType:
 		str, vals = generateWhere(o.f.rs)
 		str = fmt.Sprintf("DELETE FROM %s.%s%s", o.f.t.keySpace.name, o.f.t.Name(), str)
-	case deleteKeyOpType:
-		str, vals = generateWhere(o.f.rs)
-		key, _ := o.m["key"]
-		columnName, _ := o.m["column"]
-		str = fmt.Sprintf("DELETE %s['%s'] FROM %s.%s%s", columnName.(string), key.(string), o.f.t.keySpace.name, o.f.t.Name(), str)
+	case deleteKeysOpType:
+		str, whereVals := generateWhere(o.f.rs)
+		keys, _ := o.m["keys"].([]interface{})
+		columnName, _ := o.m["mapName"].(string)
+
+		s := ""
+		deleteVals := []interface{}{}
+		for i, key := range keys {
+			if i > 0 {
+				s = s + ", "
+			}
+			s = s + fmt.Sprintf("?[?]")
+			deleteVals = append(deleteVals, columnName, key)
+		}
+		str = fmt.Sprintf("DELETE %s FROM %s.%s", s, o.f.t.keySpace.name, o.f.t.Name()) + str
+		vals = append(deleteVals, whereVals...)
 	case insertOpType:
 		str, vals = insertStatement(o.f.t.keySpace.name, o.f.t.Name(), o.m, o.f.t.options.Merge(opt))
 	}

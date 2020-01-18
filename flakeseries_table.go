@@ -80,7 +80,7 @@ func (o *flakeSeriesT) Delete(id string) Op {
 		Delete()
 }
 
-func (o *flakeSeriesT) DeleteKey(id string, m map[string]interface{}) Op {
+func (o *flakeSeriesT) DeleteKeysFromMap(id string, mapName string, columsnToRemove []interface{}) Op {
 	timestamp, err := flakeToTime(id)
 	if err != nil {
 		return errOp{err: err}
@@ -91,7 +91,7 @@ func (o *flakeSeriesT) DeleteKey(id string, m map[string]interface{}) Op {
 		Where(Eq(bucketFieldName, bucket),
 			Eq(flakeTimestampFieldName, timestamp),
 			Eq(o.idField, id)).
-		DeleteKey(m)
+		DeleteKeysFromMap(mapName, columsnToRemove)
 }
 
 func (o *flakeSeriesT) Read(id string, pointer interface{}) Op {
