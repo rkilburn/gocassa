@@ -227,6 +227,7 @@ type Filter interface {
 	Update(valuesToUpdate map[string]interface{}) Op // Probably this is danger zone (can't be implemented efficiently) on a selectuinb with more than 1 document
 	// Delete all rows matching the filter.
 	Delete() Op
+	// Delete key(s) from a map
 	DeleteKey(valuesToUpdate map[string]interface{}) Op
 	// Reads all results. Make sure you pass in a pointer to a slice.
 	Read(pointerToASlice interface{}) Op
