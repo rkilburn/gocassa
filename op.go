@@ -105,7 +105,7 @@ func (o *singleOp) RunAtomicallyWithContext(ctx context.Context) error {
 
 func (o *singleOp) GenerateStatement() Statement {
 	switch o.opType {
-	case updateOpType, insertOpType, deleteOpType:
+	case updateOpType, insertOpType, deleteOpType, deleteKeysOpType:
 		return o.generateWrite(o.options)
 	case readOpType, singleReadOpType:
 		return o.generateRead(o.options)
@@ -130,7 +130,7 @@ func (o *singleOp) generateWrite(opt Options) Statement {
 		str, vals = generateWhere(o.f.rs)
 		str = fmt.Sprintf("DELETE FROM %s.%s%s", o.f.t.keySpace.name, o.f.t.Name(), str)
 	case deleteKeysOpType:
-		str, whereVals := generateWhere(o.f.rs)
+		whereStr, whereVals := generateWhere(o.f.rs)
 		keys, _ := o.m["keys"].([]interface{})
 		columnName, _ := o.m["mapName"].(string)
 
@@ -140,10 +140,10 @@ func (o *singleOp) generateWrite(opt Options) Statement {
 			if i > 0 {
 				s = s + ", "
 			}
-			s = s + fmt.Sprintf("?[?]")
-			deleteVals = append(deleteVals, columnName, key)
+			s = s + fmt.Sprintf("%s[?]", columnName)
+			deleteVals = append(deleteVals, key)
 		}
-		str = fmt.Sprintf("DELETE %s FROM %s.%s", s, o.f.t.keySpace.name, o.f.t.Name()) + str
+		str = fmt.Sprintf("DELETE %s FROM %s.%s", s, o.f.t.keySpace.name, o.f.t.Name()) + whereStr
 		vals = append(deleteVals, whereVals...)
 	case insertOpType:
 		str, vals = insertStatement(o.f.t.keySpace.name, o.f.t.Name(), o.m, o.f.t.options.Merge(opt))
