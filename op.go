@@ -131,19 +131,8 @@ func (o *singleOp) generateWrite(opt Options) Statement {
 		str = fmt.Sprintf("DELETE FROM %s.%s%s", o.f.t.keySpace.name, o.f.t.Name(), str)
 	case deleteKeysOpType:
 		whereStr, whereVals := generateWhere(o.f.rs)
-		keys, _ := o.m["keys"].([]interface{})
-		columnName, _ := o.m["mapName"].(string)
-
-		s := ""
-		deleteVals := []interface{}{}
-		for i, key := range keys {
-			if i > 0 {
-				s = s + ", "
-			}
-			s = s + fmt.Sprintf("%s[?]", columnName)
-			deleteVals = append(deleteVals, key)
-		}
-		str = fmt.Sprintf("DELETE %s FROM %s.%s", s, o.f.t.keySpace.name, o.f.t.Name()) + whereStr
+		deleteStr, deleteVals := generateDeleteKeys(o.f.t.keySpace.name, o.f.t.Name(), o.m)
+		str = deleteStr + whereStr
 		vals = append(deleteVals, whereVals...)
 	case insertOpType:
 		str, vals = insertStatement(o.f.t.keySpace.name, o.f.t.Name(), o.m, o.f.t.options.Merge(opt))
@@ -279,4 +268,20 @@ func sortedKeys(m map[string]interface{}) []string {
 	}
 	sort.Strings(keys)
 	return keys
+}
+
+func generateDeleteKeys(ks, cn string, m map[string]interface{}) (string, []interface{}) {
+	keys, _ := m["keys"].([]interface{})
+	columnName, _ := m["mapName"].(string)
+
+	s := ""
+	deleteVals := []interface{}{}
+	for i, key := range keys {
+		if i > 0 {
+			s = s + ", "
+		}
+		s = s + fmt.Sprintf("%s[?]", columnName)
+		deleteVals = append(deleteVals, key)
+	}
+	return fmt.Sprintf("DELETE %s FROM %s.%s", s, ks, cn), deleteVals
 }
