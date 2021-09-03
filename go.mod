@@ -1,4 +1,4 @@
-module github.com/monzo/gocassa
+module github.com/rkilburn/gocassa
 
 go 1.15
 
