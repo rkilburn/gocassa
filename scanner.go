@@ -7,7 +7,7 @@ import (
 
 	"github.com/gocql/gocql"
 
-	r "github.com/monzo/gocassa/reflect"
+	r "github.com/rkilburn/gocassa/reflect"
 )
 
 // scanner implements the Scanner interface which takes in a Scannable

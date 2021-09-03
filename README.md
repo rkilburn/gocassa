@@ -23,7 +23,7 @@ import(
     "fmt"
     "time"
 
-    "github.com/monzo/gocassa"
+    "github.com/rkilburn/gocassa"
 )
 
 type Sale struct {

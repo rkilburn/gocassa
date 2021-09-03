@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"strings"
 
-	r "github.com/monzo/gocassa/reflect"
+	r "github.com/rkilburn/gocassa/reflect"
 )
 
 type t struct {
