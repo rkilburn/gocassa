@@ -305,6 +305,10 @@ func (qe *OptionCheckingQE) ExecuteAtomicallyWithOptions(opts Options, stmt []St
 	return nil
 }
 
+func (qe *OptionCheckingQE) IncrementPrometheusCounterSuccess(method string) {}
+
+func (qe *OptionCheckingQE) IncrementPrometheusCounterError(method string) {}
+
 func TestQueryWithConsistency(t *testing.T) {
 	// It's tricky to verify this against a live DB, so mock out the
 	// query executor and make sure the right options get passed
@@ -358,7 +362,7 @@ func TestExecuteWithConsistency(t *testing.T) {
 
 func TestExecuteWithNullableFields(t *testing.T) {
 	type UserBasic struct {
-		Id   	 string
+		Id       string
 		Metadata []byte
 	}
 
@@ -380,7 +384,7 @@ func TestExecuteWithNullableFields(t *testing.T) {
 
 	// upserting with a non-nullable field
 	type UserWithPhone struct {
-		Id   	    string
+		Id          string
 		PhoneNumber *string
 		Metadata    []byte
 	}
@@ -396,10 +400,10 @@ func TestExecuteWithNullableFields(t *testing.T) {
 	assert.Equal(t, "UPDATE user.user_by_id SET metadata = ?, phonenumber = ? WHERE id = ?", qe.stmt.Query())
 
 	type UserWithName struct {
-		Id   	    string
-		Name        string
-		Metadata    []byte
-		Status 		map[string]string
+		Id       string
+		Name     string
+		Metadata []byte
+		Status   map[string]string
 	}
 	cs = ks.Table("user", UserWithName{}, Keys{
 		PartitionKeys: []string{"Id"}, ClusteringColumns: []string{"Name"}}).

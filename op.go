@@ -54,22 +54,43 @@ func newWriteOp(qe QueryExecutor, f filter, opType uint8, m map[string]interface
 }
 
 func (o *singleOp) Run() error {
+	var err error
 	switch o.opType {
 	case readOpType, singleReadOpType:
 		stmt := o.generateSelect(o.options)
 		scanner := NewScanner(stmt, o.result)
-		return o.qe.QueryWithOptions(o.options, stmt, scanner)
+		err = o.qe.QueryWithOptions(o.options, stmt, scanner)
+		if err != nil {
+			o.qe.IncrementPrometheusCounterError("read")
+		} else {
+			o.qe.IncrementPrometheusCounterSuccess("read")
+		}
 	case insertOpType:
 		stmt := o.generateInsert(o.options)
-		return o.qe.ExecuteWithOptions(o.options, stmt)
+		err = o.qe.ExecuteWithOptions(o.options, stmt)
+		if err != nil {
+			o.qe.IncrementPrometheusCounterError("insert")
+		} else {
+			o.qe.IncrementPrometheusCounterSuccess("insert")
+		}
 	case updateOpType:
 		stmt := o.generateUpdate(o.options)
-		return o.qe.ExecuteWithOptions(o.options, stmt)
+		err = o.qe.ExecuteWithOptions(o.options, stmt)
+		if err != nil {
+			o.qe.IncrementPrometheusCounterError("update")
+		} else {
+			o.qe.IncrementPrometheusCounterSuccess("update")
+		}
 	case deleteOpType:
 		stmt := o.generateDelete(o.options)
-		return o.qe.ExecuteWithOptions(o.options, stmt)
+		err = o.qe.ExecuteWithOptions(o.options, stmt)
+		if err != nil {
+			o.qe.IncrementPrometheusCounterError("delete")
+		} else {
+			o.qe.IncrementPrometheusCounterSuccess("delete")
+		}
 	}
-	return nil
+	return err
 }
 
 func (o *singleOp) RunWithContext(ctx context.Context) error {

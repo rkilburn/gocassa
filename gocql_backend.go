@@ -2,10 +2,22 @@ package gocassa
 
 import (
 	"github.com/gocql/gocql"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 type goCQLBackend struct {
-	session *gocql.Session
+	session              *gocql.Session
+	readSuccessCounter   prometheus.Counter
+	insertSuccessCounter prometheus.Counter
+	updateSuccessCounter prometheus.Counter
+	deleteSuccessCounter prometheus.Counter
+	totalSuccessCounter  prometheus.Counter
+	readErrorCounter     prometheus.Counter
+	insertErrorCounter   prometheus.Counter
+	updateErrorCounter   prometheus.Counter
+	deleteErrorCounter   prometheus.Counter
+	totalErrorCounter    prometheus.Counter
 }
 
 func (cb goCQLBackend) Query(stmt Statement, scanner Scanner) error {
@@ -73,7 +85,17 @@ func (cb goCQLBackend) ExecuteAtomicallyWithOptions(opts Options, stmts []Statem
 // See #90 for more details
 func GoCQLSessionToQueryExecutor(sess *gocql.Session) QueryExecutor {
 	return goCQLBackend{
-		session: sess,
+		session:              sess,
+		readSuccessCounter:   promauto.NewCounter(prometheus.CounterOpts{Name: "cassandra_read_success"}),
+		insertSuccessCounter: promauto.NewCounter(prometheus.CounterOpts{Name: "cassandra_insert_success"}),
+		updateSuccessCounter: promauto.NewCounter(prometheus.CounterOpts{Name: "cassandra_update_success"}),
+		deleteSuccessCounter: promauto.NewCounter(prometheus.CounterOpts{Name: "cassandra_delete_success"}),
+		totalSuccessCounter:  promauto.NewCounter(prometheus.CounterOpts{Name: "cassandra_total_success"}),
+		readErrorCounter:     promauto.NewCounter(prometheus.CounterOpts{Name: "cassandra_read_error"}),
+		insertErrorCounter:   promauto.NewCounter(prometheus.CounterOpts{Name: "cassandra_insert_error"}),
+		updateErrorCounter:   promauto.NewCounter(prometheus.CounterOpts{Name: "cassandra_update_error"}),
+		deleteErrorCounter:   promauto.NewCounter(prometheus.CounterOpts{Name: "cassandra_delete_error"}),
+		totalErrorCounter:    promauto.NewCounter(prometheus.CounterOpts{Name: "cassandra_total_error"}),
 	}
 }
 
@@ -89,4 +111,32 @@ func newGoCQLBackend(nodeIps []string, username, password string) (QueryExecutor
 		return nil, err
 	}
 	return GoCQLSessionToQueryExecutor(sess), nil
+}
+
+func (cb goCQLBackend) IncrementPrometheusCounterSuccess(counter string) {
+	switch counter {
+	case "read":
+		cb.readSuccessCounter.Inc()
+	case "insert":
+		cb.insertSuccessCounter.Inc()
+	case "update":
+		cb.updateSuccessCounter.Inc()
+	case "delete":
+		cb.deleteSuccessCounter.Inc()
+	}
+	cb.totalSuccessCounter.Inc()
+}
+
+func (cb goCQLBackend) IncrementPrometheusCounterError(counter string) {
+	switch counter {
+	case "read":
+		cb.readErrorCounter.Inc()
+	case "insert":
+		cb.insertErrorCounter.Inc()
+	case "update":
+		cb.updateErrorCounter.Inc()
+	case "delete":
+		cb.deleteErrorCounter.Inc()
+	}
+	cb.totalErrorCounter.Inc()
 }

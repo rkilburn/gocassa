@@ -374,6 +374,10 @@ type QueryExecutor interface {
 	ExecuteAtomically(stmt []Statement) error
 	// ExecuteAtomically executes multiple DML queries with a logged batch, and takes options
 	ExecuteAtomicallyWithOptions(opts Options, stmts []Statement) error
+	// IncrementPrometheusCounterSuccess updates the specified success and total counters
+	IncrementPrometheusCounterSuccess(counter string)
+	// IncrementPrometheusCounterError updates the specified error and total counters
+	IncrementPrometheusCounterError(counter string)
 }
 
 type Counter int
